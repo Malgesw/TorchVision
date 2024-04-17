@@ -95,9 +95,8 @@ for label in colors_per_class:
     ax.scatter(current_tx, current_ty, c=color, label=label)
 
 ax.legend(loc='best')
-plt.show()
-
 plt.savefig("output.jpg")
+plt.show()
 
 
 
