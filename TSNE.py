@@ -97,6 +97,8 @@ for label in colors_per_class:
 ax.legend(loc='best')
 plt.show()
 
+plt.savefig("output.jpg")
+
 
 
 
