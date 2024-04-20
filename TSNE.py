@@ -54,21 +54,17 @@ train_set = torchvision.datasets.FashionMNIST(
 train_loader = torch.utils.data.DataLoader(train_set, batch_size=64, shuffle=True)
 features = None
 labels = []
-image_paths = []
 
 model = torchvision.models.resnet18(weights='IMAGENET1K_V1')  # pretrained = True
 model.eval()
 model.to(device)
 
 for batch in tqdm(train_loader, desc='Running the model inference...'):
-    #images = batch['image'].to(device)
-    #labels += batch['label']
-    #image_paths = batch['image_path']
     images = batch[0].to(device)
     labels += batch[1]
     with torch.no_grad():
         output = model.forward(images)
-    current_features = output.cpu().numpy()
+    current_features = output.cpu().numpy()  # moves output probabilities tensor to cpu and converts into a np array
     if features is not None:
         features = np.concatenate((features, current_features))
     else:
@@ -82,9 +78,9 @@ tx = scale_to_01_range(tx)
 ty = scale_to_01_range(ty)
 
 fig = plt.figure()
-ax = fig.add_subplot(111)
+ax = fig.add_subplot(111)  # equivalent to fig.add_subplot(1, 1, 1)
 
-labels = list(map(str, list(map(int, labels))))
+labels = list(map(str, list(map(int, labels))))  # converts a 1-d tensor into a list of strings
 
 for label in colors_per_class:
     indices = [i for i, l in enumerate(labels) if l == label]
