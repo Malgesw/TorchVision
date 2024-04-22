@@ -5,11 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 from sklearn.manifold import TSNE
-
-
-class GrayscaleToRGB(object):
-    def __call__(self, img):
-        return img.convert('RGB')
+from utilities import GrayscaleToRGB
 
 
 def scale_to_01_range(x):
@@ -91,7 +87,7 @@ for label in colors_per_class:
     ax.scatter(current_tx, current_ty, c=color, label=label)
 
 ax.legend(loc='best')
-plt.savefig("output.jpg")
+plt.savefig("./plots/output.jpg")
 plt.show()
 
 

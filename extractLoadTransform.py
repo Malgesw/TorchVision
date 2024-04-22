@@ -3,12 +3,7 @@ import torch, torchvision, torchvision.transforms as transforms
 import torch.utils.data
 import numpy as np
 import matplotlib.pyplot as plt
-
-
-class GrayscaleToRGB(object):
-    def __call__(self, img):
-        return img.convert('RGB')
-
+from utilities import GrayscaleToRGB
 
 train_set = torchvision.datasets.FashionMNIST(
     root='./data/FashionMNIST',
