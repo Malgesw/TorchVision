@@ -81,6 +81,7 @@ class MnistResnet18(nn.Module):
                     labels = labels.to(dev)
 
                     outputs = self.model(inputs)
+
                     if epoch == num_epochs-1:
                         lab += labels
                         current_features = outputs.cpu().numpy()
@@ -88,17 +89,18 @@ class MnistResnet18(nn.Module):
                             features = current_features
                         else:
                             features = np.concatenate((features, current_features))
+
                     predictions = torch.argmax(outputs, 1)
                     loss = loss_function(outputs, labels)
 
                     current_loss += loss.item()*inputs.size(0)  # cross-entropy computes a mean wrt the batch, therefore we multiply by batch_size
                     current_acc += torch.sum((predictions == labels)).double()
 
-            t_loss = current_loss / len(t_loader)
-            t_acc = current_acc / len(t_loader)
+            val_loss = current_loss / len(t_loader)
+            val_acc = current_acc / len(t_loader)
 
-            print("Epoch [{}/{}], train loss: {:.4f}, train acc: {:.4f}, test loss: {:.4f}, test acc: {:.4f}"
-                  .format(epoch+1, num_epochs, tr_loss, tr_acc, t_loss, t_acc))
+            print("Epoch [{}/{}], train loss: {:.4f}, train acc: {:.4f}, val loss: {:.4f}, val acc: {:.4f}"
+                  .format(epoch+1, num_epochs, tr_loss, tr_acc, val_loss, val_acc))
 
         tsne = TSNE(n_components=2).fit_transform(features)
 
@@ -140,7 +142,9 @@ train_set = torchvision.datasets.FashionMNIST(
     transform=transform
 )
 
-#TODO: try using torch.utils.data.random_split() to extract a validation set
+train_size = int(0.8 * len(train_set))
+val_size = len(train_set) - train_size
+train_set, validation_set = torch.utils.data.random_split(train_set, [train_size, val_size])
 
 test_set = torchvision.datasets.FashionMNIST(
     root='./data/FashionMNIST',
@@ -150,7 +154,7 @@ test_set = torchvision.datasets.FashionMNIST(
 )
 
 train_loader = torch.utils.data.DataLoader(train_set, batch_size=50, shuffle=True)
-test_loader = torch.utils.data.DataLoader(test_set, batch_size=50, shuffle=False)
+val_loader = torch.utils.data.DataLoader(validation_set, batch_size=50, shuffle=False)
 
 model = MnistResnet18()
 
@@ -169,13 +173,14 @@ else:
 model.model.to(device)
 
 # fine tune last layer
-model.train_model(train_loader, test_loader, loss_fn, optimizer, num_epochs=5)
+model.train_model(train_loader, val_loader, loss_fn, optimizer, num_epochs=5)
 
 # unfreeze the original layers and repeat the training
 for param in model.parameters():
     param.requires_grad = True
 
-model.train_model(train_loader, test_loader, loss_fn, optimizer, num_epochs=10)
+optimizer = torch.optim.SGD(model.model.parameters(), lr=0.01, momentum=0.9)
+model.train_model(train_loader, val_loader, loss_fn, optimizer, num_epochs=10)
 
 
 
